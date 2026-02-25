@@ -1,0 +1,225 @@
+/* ===== LANDING GLOBAL ===== */
+
+.landing {
+  font-family: "Inter", sans-serif;
+  overflow-x: hidden;
+}
+
+/* ===== NAVBAR ===== */
+
+.navbar {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  padding: 20px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.nav-logo img {
+  width: 32px;
+}
+
+.nav-links a {
+  margin-left: 30px;
+  text-decoration: none;
+  color: #111827;
+  font-weight: 500;
+}
+
+/* ===== HERO ===== */
+
+.hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(
+    -45deg,
+    #ffffff,
+    #f1f5f9,
+    #e2e8f0,
+    #ffffff
+  );
+  background-size: 400% 400%;
+  animation: gradientMove 10s ease infinite;
+  padding: 0 20px;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero-content h1 {
+  font-size: 56px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.hero-content p {
+  font-size: 18px;
+  color: #475569;
+  margin-bottom: 30px;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* ===== SECTIONS ===== */
+
+.section {
+  padding: 100px 60px;
+  text-align: center;
+}
+
+.section h2 {
+  font-size: 36px;
+  margin-bottom: 60px;
+}
+
+.problem-grid,
+.steps {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.problem-card,
+.step {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  width: 280px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+}
+
+.step span {
+  font-size: 28px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 15px;
+}
+
+/* ===== CTA ===== */
+
+.cta {
+  padding: 120px 20px;
+  text-align: center;
+  background: #111827;
+  color: white;
+}
+
+.cta h2 {
+  font-size: 40px;
+  margin-bottom: 30px;
+}
+
+/* ===== BUTTONS ===== */
+
+.primary-btn {
+  background: #111827;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.secondary-btn {
+  background: white;
+  border: 1px solid #111827;
+  padding: 14px 28px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #111827;
+}
+
+.hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+/* Animated Gradient Background */
+.hero::before {
+  content: "";
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(37,99,235,0.25) 0%, transparent 70%);
+  top: -200px;
+  right: -200px;
+  animation: floatGlow 8s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes floatGlow {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-40px, 40px); }
+  100% { transform: translate(0, 0); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  animation: fadeUp 1s ease forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark Section */
+.section.dark {
+  background: #0f172a;
+  color: white;
+  padding: 120px 60px;
+  position: relative;
+}
+
+.section.dark h2 {
+  font-size: 40px;
+  margin-bottom: 60px;
+}
+
+/* Glow Cards */
+.problem-card.glow {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  transition: 0.3s ease;
+}
+
+.problem-card.glow:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 0 40px rgba(37,99,235,0.3);
+}
