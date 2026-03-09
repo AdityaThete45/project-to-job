@@ -1,6 +1,8 @@
 const Interview = require("../models/Interview");
 
-// Company sends interview request
+/* ================================
+   COMPANY SENDS INTERVIEW REQUEST
+================================ */
 exports.sendInterviewRequest = async (req, res) => {
   try {
     const { studentId, projectId, message } = req.body;
@@ -9,19 +11,22 @@ exports.sendInterviewRequest = async (req, res) => {
       company: req.user._id,
       student: studentId,
       project: projectId,
-      message
+      message,
+      status: "pending",
     });
-    
+
     res.status(201).json({
       message: "Interview request sent",
-      interview
+      interview,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Student views their interview requests
+/* ================================
+   STUDENT VIEWS THEIR REQUESTS
+================================ */
 exports.getStudentRequests = async (req, res) => {
   try {
     const requests = await Interview.find({ student: req.user._id })
@@ -34,7 +39,9 @@ exports.getStudentRequests = async (req, res) => {
   }
 };
 
-// Student updates interview status
+/* ================================
+   STUDENT ACCEPTS / REJECTS
+================================ */
 exports.updateInterviewStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -49,7 +56,7 @@ exports.updateInterviewStatus = async (req, res) => {
       return res.status(404).json({ message: "Interview not found" });
     }
 
-    // Ensure only the student can update
+    // Only student can update
     if (interview.student.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
@@ -59,20 +66,23 @@ exports.updateInterviewStatus = async (req, res) => {
 
     res.json({
       message: `Interview ${status}`,
-      interview
+      interview,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+/* ================================
+   COMPANY VIEWS INTERVIEWS
+================================ */
 exports.getCompanyInterviews = async (req, res) => {
   try {
     const interviews = await Interview.find({
       company: req.user._id,
     })
-      .populate("student")
-      .populate("project");
+      .populate("student", "name email")
+      .populate("project", "title");
 
     res.json(interviews);
   } catch (error) {

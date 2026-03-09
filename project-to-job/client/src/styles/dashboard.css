@@ -614,3 +614,103 @@
   margin-top: 6px;
   font-weight: 500;
 }
+
+.project-card.upgraded {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.project-card.upgraded:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.verified-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.upgraded-stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.upgraded-stat:hover {
+  transform: translateY(-3px);
+}
+
+.upgraded-student {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+}
+
+.upgraded-student:hover {
+  transform: translateY(-4px);
+}
+
+.student-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cgpa-badge {
+  background: #f3f4f6;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.student-info {
+  margin-top: 8px;
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: #555;
+}
+
+.shortlist-btn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #111827;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.shortlist-btn:hover {
+  background: #000;
+}

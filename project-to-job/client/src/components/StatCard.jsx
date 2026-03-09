@@ -8,19 +8,19 @@ import {
 export default function StatCard({ type, value, label }) {
 
   const iconMap = {
-    projects: <Folder size={20} />,
-    interviews: <MessageSquare size={20} />,
-    authenticity: <TrendingUp size={20} />,
-    shortlist: <Star size={20} />,   // ⭐ This is new
+    projects: <Folder size={22} />,
+    interviews: <MessageSquare size={22} />,
+    proof: <TrendingUp size={22} />,
+    shortlist: <Star size={22} />,
   };
 
   return (
-    <div className="stat-card">
+    <div className="stat-card upgraded-stat">
       <div className="stat-icon">
         {iconMap[type]}
       </div>
 
-      <div>
+      <div className="stat-content">
         <div className="stat-number">{value}</div>
         <div className="stat-label">{label}</div>
       </div>
