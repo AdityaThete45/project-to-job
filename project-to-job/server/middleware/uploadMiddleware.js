@@ -1,26 +1,27 @@
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 
-// Ensure uploads folder exists
-const uploadPath = path.join(__dirname, "../uploads");
+// Use memoryStorage — keeps file in buffer, no disk path issues with multer v2
+const storage = multer.memoryStorage();
 
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath);
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = [
+    "video/mp4",
+    "video/webm",
+    "video/quicktime",
+    "video/x-msvideo",
+    "video/avi"
+  ];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only video files are allowed (mp4, webm, mov, avi)."), false);
   }
-});
+};
 
 const upload = multer({
   storage,
-  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+  fileFilter,
+  limits: { fileSize: 200 * 1024 * 1024 } // 200MB
 });
 
 module.exports = upload;

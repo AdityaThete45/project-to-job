@@ -1,4 +1,5 @@
 const Interview = require("../models/Interview");
+const mongoose = require("mongoose");
 
 /* ================================
    COMPANY SENDS INTERVIEW REQUEST
@@ -7,19 +8,39 @@ exports.sendInterviewRequest = async (req, res) => {
   try {
     const { studentId, projectId, message } = req.body;
 
+    if (!studentId || !projectId) {
+      return res.status(400).json({ message: "Student ID and Project ID are required." });
+    }
+
+    // Idempotent: return existing if already sent
+    const existing = await Interview.findOne({
+      company: req.user._id,
+      project: projectId
+    });
+
+    if (existing) {
+      return res.status(200).json({
+        message: "Interview request already sent.",
+        interview: existing
+      });
+    }
+
     const interview = await Interview.create({
       company: req.user._id,
       student: studentId,
       project: projectId,
-      message,
-      status: "pending",
+      message: message || "We are interested in your project.",
+      status: "pending"
     });
 
     res.status(201).json({
-      message: "Interview request sent",
-      interview,
+      message: "Interview request sent successfully.",
+      interview
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(200).json({ message: "Interview request already sent." });
+    }
     res.status(500).json({ message: error.message });
   }
 };
@@ -30,8 +51,9 @@ exports.sendInterviewRequest = async (req, res) => {
 exports.getStudentRequests = async (req, res) => {
   try {
     const requests = await Interview.find({ student: req.user._id })
-      .populate("company", "name email")
-      .populate("project", "title");
+      .populate("company", "name email companyName industry")
+      .populate("project", "title proofScore isVerified techStack")
+      .sort({ createdAt: -1 });
 
     res.json(requests);
   } catch (error) {
@@ -44,47 +66,90 @@ exports.getStudentRequests = async (req, res) => {
 ================================ */
 exports.updateInterviewStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, studentNotes } = req.body;
 
     if (!["accepted", "rejected"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status" });
+      return res.status(400).json({ message: "Invalid status. Must be accepted or rejected." });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid interview ID." });
     }
 
     const interview = await Interview.findById(req.params.id);
 
     if (!interview) {
-      return res.status(404).json({ message: "Interview not found" });
+      return res.status(404).json({ message: "Interview not found." });
     }
 
-    // Only student can update
     if (interview.student.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized" });
+      return res.status(403).json({ message: "Not authorized to update this interview." });
     }
 
     interview.status = status;
+    interview.respondedAt = new Date();
+    if (studentNotes) interview.studentNotes = studentNotes;
+
     await interview.save();
 
-    res.json({
-      message: `Interview ${status}`,
-      interview,
-    });
+    res.json({ message: `Interview ${status}.`, interview });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 /* ================================
-   COMPANY VIEWS INTERVIEWS
+   COMPANY VIEWS THEIR INTERVIEWS
 ================================ */
 exports.getCompanyInterviews = async (req, res) => {
   try {
-    const interviews = await Interview.find({
-      company: req.user._id,
-    })
-      .populate("student", "name email")
-      .populate("project", "title");
+    const { status } = req.query;
+    const filter = { company: req.user._id };
+    if (status) filter.status = status;
+
+    const interviews = await Interview.find(filter)
+      .populate("student", "name email college cgpa trustScore trustRank githubUsername")
+      .populate("project", "title proofScore isVerified techStack")
+      .sort({ createdAt: -1 });
 
     res.json(interviews);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ================================
+   COMPANY SCHEDULES INTERVIEW
+================================ */
+exports.scheduleInterview = async (req, res) => {
+  try {
+    const { scheduledAt, meetingLink, companyNotes } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid interview ID." });
+    }
+
+    const interview = await Interview.findOne({
+      _id: req.params.id,
+      company: req.user._id
+    });
+
+    if (!interview) {
+      return res.status(404).json({ message: "Interview not found or not authorized." });
+    }
+
+    if (interview.status !== "accepted") {
+      return res.status(400).json({ message: "Can only schedule accepted interviews." });
+    }
+
+    interview.status = "scheduled";
+    interview.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
+    interview.meetingLink = meetingLink || "";
+    interview.companyNotes = companyNotes || "";
+
+    await interview.save();
+
+    res.json({ message: "Interview scheduled.", interview });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

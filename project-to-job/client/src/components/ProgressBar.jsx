@@ -1,28 +1,14 @@
-export default function ProgressBar({ value }) {
-  const getColor = () => {
-    if (value >= 75) return "#16a34a";
-    if (value >= 50) return "#f59e0b";
-    return "#dc2626";
-  };
+import { getScoreColor } from "../hooks/utils";
+
+export default function ProgressBar({ value, max = 100, height = 5 }) {
+  const pct = Math.min(100, Math.round((value / max) * 100));
+  const color = getScoreColor((value / max) * 100);
 
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "10px",
-        background: "#e5e7eb",
-        borderRadius: "999px",
-        overflow: "hidden",
-      }}
-    >
+    <div className="proof-bar" style={{ height }}>
       <div
-        style={{
-          width: `${value}%`,
-          height: "100%",
-          background: getColor(),
-          borderRadius: "999px",
-          transition: "width 0.6s ease",
-        }}
+        className="proof-fill"
+        style={{ width: `${pct}%`, background: color }}
       />
     </div>
   );

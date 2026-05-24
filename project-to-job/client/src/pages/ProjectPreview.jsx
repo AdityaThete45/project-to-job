@@ -1,136 +1,112 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
-import "../styles/dashboard.css";
+import { useParams, useNavigate } from "react-router-dom";
+import { getMyProjects } from "../services/api";
+import { getScoreColor } from "../hooks/utils";
+import ProgressBar from "../components/ProgressBar";
 
 export default function ProjectPreview({ token }) {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [project, setProject] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchProject();
-    }, []);
+        getMyProjects()
+            .then(projects => {
+                const found = projects.find(p => p._id === id);
+                setProject(found || null);
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [id]);
 
-    const fetchProject = async () => {
-        try {
-            const res = await axios.get(
-                `http://localhost:5000/api/projects/${id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setProject(res.data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    if (loading) return <div style={{ padding: 40, color: "var(--text-muted)" }}>Loading…</div>;
 
-    if (!project) return <p>Loading...</p>;
+    if (!project) return (
+        <div style={{ padding: 40 }}>
+            <button className="btn btn-secondary btn-sm" onClick={() => navigate("/student")}>← Dashboard</button>
+            <div className="empty-state" style={{ marginTop: 40 }}>
+                <div className="empty-state-icon">❌</div>
+                <h3>Project not found</h3>
+            </div>
+        </div>
+    );
 
-    const score = project.proofScore || 0;
-
-    const confidence =
-        score >= 75
-            ? { text: "High", color: "#16a34a" }
-            : score >= 50
-                ? { text: "Medium", color: "#f59e0b" }
-                : { text: "Low", color: "#dc2626" };
-
-    const breakdown = project.proofBreakdown || {};
+    const scoreColor = getScoreColor(project.proofScore);
 
     return (
-        <div className="preview-page">
+        <div style={{ maxWidth: 800, margin: "0 auto", padding: 40 }}>
+            <button className="btn btn-secondary btn-sm" style={{ marginBottom: 24 }} onClick={() => navigate("/student")}>
+                ← Back to Dashboard
+            </button>
 
-            {/* 🎥 VIDEO */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.5px" }}>{project.title}</h1>
+                {project.isVerified && (
+                    <span className="verified-badge" style={{ position: "static" }}>✓ Verified</span>
+                )}
+            </div>
+
             {project.videoLink && (
-                <div className="video-wrapper">
-                    <video
-                        controls
-                        src={project.videoLink}
-                        className="preview-video"
-                    />
-                </div>
+                <video
+                    controls
+                    src={project.videoLink}
+                    style={{ width: "100%", borderRadius: 14, marginBottom: 24, maxHeight: 460, background: "#000" }}
+                />
             )}
 
-            <h1>
-                {project.title}
-                {project.isVerified && (
-                    <div style={{
-                        background: "#16a34a",
-                        color: "white",
-                        padding: "6px 12px",
-                        borderRadius: "20px",
-                        display: "inline-block",
-                        marginTop: "10px"
-                    }}>
-                        ✔ Verified Project
+            <div className="card" style={{ marginBottom: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                    <span style={{ fontWeight: 700 }}>Proof Score</span>
+                    <strong style={{ fontSize: 22, color: scoreColor }}>{project.proofScore}/100</strong>
+                </div>
+                <ProgressBar value={project.proofScore} height={8} />
+
+                {project.proofBreakdown && (
+                    <div style={{ marginTop: 16 }}>
+                        {[
+                            { label: "GitHub Depth", score: project.proofBreakdown.githubDepth, max: 25 },
+                            { label: "Commit Consistency", score: project.proofBreakdown.commitConsistency, max: 20 },
+                            { label: "Repo Structure", score: project.proofBreakdown.repoStructure, max: 20 },
+                            { label: "Demo Integrity", score: project.proofBreakdown.demoIntegrity, max: 15 },
+                            { label: "Technical Explanation", score: project.proofBreakdown.technicalExplanation, max: 20 }
+                        ].map(item => (
+                            <div key={item.label} className="breakdown-row">
+                                <span className="breakdown-label">{item.label}</span>
+                                <div className="breakdown-bar">
+                                    <div
+                                        className="breakdown-fill"
+                                        style={{ width: `${(item.score / item.max) * 100}%` }}
+                                    />
+                                </div>
+                                <span className="breakdown-score">{item.score}/{item.max}</span>
+                            </div>
+                        ))}
                     </div>
                 )}
-            </h1>
+            </div>
 
-            {/* 🏆 PROOF SCORE */}
-            <div style={{ marginTop: "20px" }}>
-                <h3>Proof Score: {score}/100</h3>
-                <p style={{ color: confidence.color, fontWeight: "600" }}>
-                    Confidence: {confidence.text}
+            <div className="card" style={{ marginBottom: 16 }}>
+                <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--text-secondary)", marginBottom: 14 }}>
+                    {project.description}
                 </p>
+                <div className="tags">
+                    {project.techStack?.map((t, i) => <span key={i} className="tag">{t}</span>)}
+                </div>
             </div>
 
-            {/* 📊 PROOF ENGINE BREAKDOWN */}
-            <div style={{ marginTop: "30px" }}>
-                <h2>Proof Engine Evaluation</h2>
-
-                {[
-                    { label: "GitHub Depth", value: breakdown.githubDepth || 0, max: 25 },
-                    { label: "Commit Consistency", value: breakdown.commitConsistency || 0, max: 20 },
-                    { label: "Repository Structure", value: breakdown.repoStructure || 0, max: 20 },
-                    { label: "Demo Integrity", value: breakdown.demoIntegrity || 0, max: 15 },
-                    { label: "Technical Explanation", value: breakdown.technicalExplanation || 0, max: 20 },
-                ].map((item, index) => (
-                    <div key={index} style={{ marginBottom: "18px" }}>
-                        <div className="auth-row">
-                            <span>{item.label}</span>
-                            <span>{item.value}/{item.max}</span>
-                        </div>
-
-                        <div className="progress-bar">
-                            <div
-                                className="progress-fill"
-                                style={{
-                                    width: `${(item.value / item.max) * 100}%`,
-                                    background:
-                                        item.value >= item.max * 0.7
-                                            ? "#16a34a"
-                                            : item.value >= item.max * 0.4
-                                                ? "#f59e0b"
-                                                : "#dc2626"
-                                }}
-                            />
-                        </div>
-                    </div>
-                ))}
+            <div style={{ display: "flex", gap: 12 }}>
+                {project.githubLink && (
+                    <a href={project.githubLink} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
+                        💻 GitHub
+                    </a>
+                )}
+                {project.demoLink && (
+                    <a href={project.demoLink} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">
+                        🚀 Live Demo
+                    </a>
+                )}
             </div>
-
-            {/* DESCRIPTION */}
-            <p style={{ marginTop: "25px" }}>
-                {project.description}
-            </p>
-
-            {/* TECH STACK */}
-            <div className="tags" style={{ marginTop: "15px" }}>
-                {project.techStack.map((tech, index) => (
-                    <span key={index} className="tag">
-                        {tech}
-                    </span>
-                ))}
-            </div>
-
-            {/* DEMO BUTTON */}
-            {project.demoLink && (
-                <a href={project.demoLink} target="_blank" rel="noreferrer">
-                    <button className="primary-btn" style={{ marginTop: "20px" }}>
-                        🚀 View Live Demo
-                    </button>
-                </a>
-            )}
         </div>
     );
 }

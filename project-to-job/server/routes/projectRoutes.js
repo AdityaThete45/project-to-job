@@ -4,49 +4,22 @@ const { protect, authorize } = require("../middleware/authMiddleware");
 const projectController = require("../controllers/projectController");
 const upload = require("../middleware/uploadMiddleware");
 
-// ================= STUDENT ROUTES =================
+// Student: create project
+router.post("/", protect, authorize("student"), upload.single("video"), projectController.createProject);
 
-// Create project
-router.post(
-  "/",
-  protect,
-  authorize("student"),
-  upload.single("video"),
-  projectController.createProject
-);
+// Student: view own projects
+router.get("/my-projects", protect, authorize("student"), projectController.getMyProjects);
 
-// Student views own projects
-router.get(
-  "/my-projects",
-  protect,
-  authorize("student"),
-  projectController.getMyProjects
-);
+// Student: delete own project
+router.delete("/:id", protect, authorize("student"), projectController.deleteProject);
 
-// ================= COMPANY ROUTES =================
+// Company: view a student's projects
+router.get("/student/:studentId", protect, authorize("company"), projectController.getStudentProjects);
 
-// Company views a student's projects
-router.get(
-  "/student/:studentId",
-  protect,
-  authorize("company"),
-  projectController.getStudentProjects
-);
+// IMPORTANT: status route before :id
+router.get("/:projectId/status", protect, authorize("company"), projectController.getProjectActionStatus);
 
-// 🔥 IMPORTANT: STATUS ROUTE FIRST
-router.get(
-  "/:projectId/status",
-  protect,
-  authorize("company"),
-  projectController.getProjectActionStatus
-);
-
-// Then get single project
-router.get(
-  "/:id",
-  protect,
-  authorize("company"),
-  projectController.getProjectById
-);
+// Company: get single project detail
+router.get("/:id", protect, authorize("company"), projectController.getProjectById);
 
 module.exports = router;

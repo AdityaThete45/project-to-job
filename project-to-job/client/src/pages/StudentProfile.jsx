@@ -1,168 +1,133 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getStudentProfile, getStudentTrustMetrics } from "../services/api";
+import { getScoreColor, getTrustRankStyle } from "../hooks/utils";
+import ProgressBar from "../components/ProgressBar";
+import { ArrowLeft } from "lucide-react";
 
-const StudentProfile = () => {
+export default function StudentProfile({ token }) {
   const { id } = useParams();
-
-  const [student, setStudent] = useState(null);
-  const [projects, setProjects] = useState([]);
+  const navigate = useNavigate();
+  const [data, setData] = useState(null);
   const [trust, setTrust] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStudent();
-    fetchProjects();
-    fetchTrust();
-  }, []);
+    Promise.all([
+      getStudentProfile(id),
+      getStudentTrustMetrics(id)
+    ])
+      .then(([profileData, trustData]) => {
+        setData(profileData);
+        setTrust(trustData);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [id]);
 
-  const fetchStudent = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/api/users/${id}`);
-      setStudent(res.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const fetchProjects = async () => {
-    try {
-      const res = await axios.get(
-        `http://localhost:5000/api/projects/student/${id}`
-      );
-      setProjects(res.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const fetchTrust = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `http://localhost:5000/api/users/${id}/trust`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setTrust(res.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  if (!student) return <p>Loading...</p>;
-
-  return (
-    <div style={{ padding: "30px", maxWidth: "900px", margin: "auto" }}>
-      
-      {/* STUDENT INFO */}
-      <h2>{student.name}</h2>
-      <p>{student.email}</p>
-
-      <p>
-        <b>College:</b> {student.college} | 
-        <b> CGPA:</b> {student.cgpa} | 
-        <b> Graduation:</b> {student.graduationYear}
-      </p>
-
-      {/* SKILLS */}
-      <div style={{ marginTop: "10px" }}>
-        <h3>Skills</h3>
-        {student.skills &&
-          student.skills.map((skill, index) => (
-            <span
-              key={index}
-              style={{
-                background: "#eee",
-                padding: "5px 10px",
-                borderRadius: "15px",
-                marginRight: "8px",
-              }}
-            >
-              {skill}
-            </span>
-          ))}
-      </div>
-
-      {/* TRUST METRICS */}
-      {trust && (
-        <div
-          style={{
-            marginTop: "30px",
-            border: "1px solid #ddd",
-            padding: "15px",
-            borderRadius: "10px",
-            background: "#f8f8f8",
-          }}
-        >
-          <h3>Trust Metrics</h3>
-
-          <p>Total Projects: {trust.totalProjects}</p>
-          <p>Average Proof Score: {trust.avgProofScore}</p>
-          <p>Verified Projects: {trust.verifiedProjects}</p>
-          <p>Companies Interested: {trust.totalShortlists}</p>
-          <p>Interview Requests: {trust.totalInterviews}</p>
-          <p>Acceptance Rate: {trust.acceptanceRate}%</p>
-        </div>
-      )}
-
-      {/* PROJECTS */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>Projects</h3>
-
-        {projects.map((project) => (
-          <div
-            key={project._id}
-            style={{
-              border: "1px solid #ccc",
-              padding: "15px",
-              marginBottom: "15px",
-              borderRadius: "10px",
-            }}
-          >
-            <h4>
-              {project.title}
-              {project.isVerified && (
-                <span style={{ color: "green", marginLeft: "10px" }}>
-                  ✔ Verified
-                </span>
-              )}
-            </h4>
-
-            <p>{project.description}</p>
-
-            <p>
-              <b>Tech Stack:</b> {project.techStack.join(", ")}
-            </p>
-
-            <p>
-              <b>Proof Score:</b> {project.proofScore}
-            </p>
-
-            {project.videoLink && (
-              <video
-                width="100%"
-                controls
-                style={{ marginTop: "10px", borderRadius: "8px" }}
-              >
-                <source src={project.videoLink} />
-              </video>
-            )}
-
-            <p style={{ marginTop: "10px" }}>
-              <a href={project.githubLink} target="_blank" rel="noreferrer">
-                View GitHub Repository
-              </a>
-            </p>
-          </div>
-        ))}
+  if (loading) return <div style={{ padding: 40, color: "var(--text-muted)" }}>Loading…</div>;
+  if (!data?.student) return (
+    <div style={{ padding: 40 }}>
+      <button className="btn btn-secondary btn-sm" onClick={() => navigate(-1)}>← Back</button>
+      <div className="empty-state" style={{ marginTop: 40 }}>
+        <div className="empty-state-icon">❌</div>
+        <h3>Student not found</h3>
       </div>
     </div>
   );
-};
 
-export default StudentProfile;
+  const { student, projects = [] } = data;
+  const rankStyle = getTrustRankStyle(student.trustRank);
+
+  return (
+    <div style={{ maxWidth: 860, padding: "0 4px" }}>
+      <button className="btn btn-secondary btn-sm" style={{ marginBottom: 24 }} onClick={() => navigate(-1)}>
+        <ArrowLeft size={14} /> Back
+      </button>
+
+      <div className="profile-header">
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 14 }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800 }}>
+            {student.name?.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div className="profile-name">{student.name}</div>
+            <div className="profile-meta">
+              {student.college || "Student"} · Class of {student.graduationYear || "N/A"}
+            </div>
+          </div>
+        </div>
+
+        {student.trustRank && student.trustRank !== "Unranked" && (
+          <span className="trust-rank-badge" style={{ ...rankStyle }}>🏆 {student.trustRank}</span>
+        )}
+
+        {student.skills?.length > 0 && (
+          <div className="tags" style={{ marginTop: 14 }}>
+            {student.skills.map((s, i) => (
+              <span key={i} className="tag" style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}>
+                {s}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Trust Metrics */}
+      {trust && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 14, marginBottom: 28 }}>
+          {[
+            { label: "Projects", value: trust.totalProjects },
+            { label: "Avg Proof Score", value: trust.avgProofScore },
+            { label: "Verified", value: trust.verifiedProjects },
+            { label: "Shortlisted By", value: trust.totalShortlists },
+            { label: "Interviews", value: trust.totalInterviews },
+            { label: "Acceptance Rate", value: `${trust.acceptanceRate}%` }
+          ].map(({ label, value }) => (
+            <div key={label} className="card" style={{ textAlign: "center", padding: 16 }}>
+              <div style={{ fontSize: 22, fontWeight: 700 }}>{value}</div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>{label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Projects</h3>
+
+      {projects.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">💼</div>
+          <h3>No projects yet</h3>
+        </div>
+      ) : (
+        <div className="projects-grid">
+          {projects.map(p => (
+            <div
+              key={p._id}
+              className="project-card"
+              onClick={() => navigate(`/company/project/${p._id}`)}
+              style={{ cursor: "pointer" }}
+            >
+              <div className="project-body" style={{ padding: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700 }}>{p.title}</h3>
+                  {p.isVerified && (
+                    <span className="verified-badge" style={{ position: "static", fontSize: 10, padding: "2px 7px" }}>✓</span>
+                  )}
+                </div>
+                <div className="tags" style={{ marginBottom: 12 }}>
+                  {p.techStack?.slice(0, 3).map((t, i) => <span key={i} className="tag">{t}</span>)}
+                </div>
+                <div className="score-row">
+                  <span>Proof Score</span>
+                  <strong style={{ color: getScoreColor(p.proofScore) }}>{p.proofScore}/100</strong>
+                </div>
+                <ProgressBar value={p.proofScore} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
