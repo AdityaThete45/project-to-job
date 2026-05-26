@@ -1,7 +1,10 @@
 require("dotenv").config();
+require("./services/emailService");
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const http = require("http");
+const { initSocket } = require("./config/socket");
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -9,6 +12,7 @@ const projectRoutes = require("./routes/projectRoutes");
 const companyRoutes = require("./routes/companyRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const shortlistRoutes = require("./routes/shortlistRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 const app = express();
 
@@ -27,6 +31,7 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/shortlist", shortlistRoutes);
+app.use("/api/ai", aiRoutes);
 
 // ===== Health Check =====
 app.get("/", (req, res) => {
@@ -44,14 +49,17 @@ app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// ===== Database Connection =====
+// ===== Database Connection & Server Startup =====
+const server = http.createServer(app);
+initSocket(server);
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB connected");
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT} with WebSockets enabled`);
     });
   })
   .catch((err) => {

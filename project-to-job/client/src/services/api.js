@@ -60,6 +60,8 @@ export const getTopCandidates = (limit = 10) =>
 
 export const getStudentProfile = (id) => apiFetch(`/company/student/${id}`);
 
+export const getStudentAISummary = (id) => apiFetch(`/company/student/${id}/ai-summary`);
+
 // ===== INTERVIEWS =====
 export const sendInterviewRequest = (data) =>
   apiFetch("/interviews", { method: "POST", body: JSON.stringify(data) });
@@ -85,3 +87,19 @@ export const removeFromShortlist = (projectId) =>
 export const getShortlist = () => apiFetch("/shortlist");
 
 export const getStudentShortlists = () => apiFetch("/shortlist/student");
+
+// ===== AI SERVICES =====
+export const analyzeResume = (resumeText, jobDescription = "") =>
+  apiFetch("/ai/resume", { method: "POST", body: JSON.stringify({ resumeText, jobDescription }) });
+
+export const auditProjectQuality = (projectId) =>
+  apiFetch("/ai/project", { method: "POST", body: JSON.stringify({ projectId }) });
+
+export const chatCopilot = (messages) =>
+  apiFetch("/ai/copilot", { method: "POST", body: JSON.stringify({ messages }) });
+
+export const gradeInterview = (roleType, topic, answers) =>
+  apiFetch("/ai/interview", { method: "POST", body: JSON.stringify({ roleType, topic, answers }) });
+
+export const generateRoadmap = (data) =>
+  apiFetch("/ai/roadmap", { method: "POST", body: JSON.stringify(data) });

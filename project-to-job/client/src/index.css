@@ -1,9 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ============================================================
    P2J DESIGN SYSTEM — Modern SaaS
    Font: DM Sans (display) + Inter (body)
-============================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+   ============================================================ */
 
 :root {
   /* Colors */
@@ -43,6 +47,53 @@
 
   /* Sidebar */
   --sidebar-width: 260px;
+  --sidebar-bg: #0f172a;
+}
+
+html.dark,
+:root.dark,
+.dark {
+  --bg: #0B0F19;
+  --surface: #151B2C;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.04);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --brand: #6366f1;
+  --brand-hover: #4f46e5;
+  --accent: #818cf8;
+  --accent-light: rgba(99, 102, 241, 0.15);
+  --sidebar-bg: #0F1322;
+}
+
+/* Dark theme overrides for card elements and interactive controls */
+.dark .card,
+.dark .stat-card,
+.dark .project-card,
+.dark .interview-card,
+.dark .form-input,
+.dark .search-bar,
+.dark .filter-chip {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .stat-value,
+.dark .stat-label,
+.dark .project-description,
+.dark .score-row span,
+.dark .score-row strong {
+  color: var(--text-primary);
+}
+
+.dark .stat-label,
+.dark .project-description,
+.dark .score-row span {
+  color: var(--text-secondary);
 }
 
 *,
@@ -81,6 +132,8 @@ select {
 .dashboard {
   display: flex;
   min-height: 100vh;
+  background: var(--bg);
+  color: var(--text-primary);
 }
 
 .main {
@@ -94,7 +147,7 @@ select {
 /* ===== SIDEBAR ===== */
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--brand);
+  background: var(--sidebar-bg);
   color: white;
   position: fixed;
   left: 0;
@@ -103,6 +156,7 @@ select {
   display: flex;
   flex-direction: column;
   z-index: 100;
+  border-right: 1px solid var(--border);
 }
 
 .sidebar-top {
@@ -148,19 +202,22 @@ select {
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.65);
-  transition: all 0.15s ease;
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
   user-select: none;
+  border-left: 3px solid transparent;
 }
 
 .menu-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
   color: white;
 }
 
 .menu-item.active {
-  background: rgba(255, 255, 255, 0.14);
-  color: white;
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: #a5b4fc !important;
+  border-left: 3px solid #6366f1 !important;
+  border-radius: 0 var(--radius) var(--radius) 0;
 }
 
 .menu-icon {
@@ -681,7 +738,7 @@ textarea.form-input {
 /* ===== AUTH PAGES ===== */
 .auth-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, var(--bg) 0%, var(--surface) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -689,12 +746,13 @@ textarea.form-input {
 }
 
 .auth-card {
-  background: white;
-  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
   padding: 40px;
   width: 100%;
   max-width: 440px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-lg);
 }
 
 .auth-logo {
@@ -735,6 +793,7 @@ textarea.form-input {
   padding: 4px;
   border-radius: var(--radius);
   gap: 4px;
+  border: 1px solid var(--border);
 }
 
 .role-btn {
@@ -751,9 +810,10 @@ textarea.form-input {
 }
 
 .role-btn.active {
-  background: white;
+  background: var(--surface);
   color: var(--text-primary);
   box-shadow: var(--shadow-xs);
+  border: 1px solid var(--border);
 }
 
 .auth-footer {
@@ -1007,4 +1067,61 @@ textarea.form-input {
   .projects-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===== 3D LANDING CUSTOM STYLES ===== */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(0.5deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float 6s ease-in-out infinite;
+}
+
+.glass-card {
+  background: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.glass-card:hover {
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 30px 60px -15px rgba(99, 102, 241, 0.15) !important;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.landing-navbar {
+  background: rgba(15, 23, 42, 0.4) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .card,
+.dark .stat-card,
+.dark .project-card,
+.dark .interview-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.dark .card:hover,
+.dark .stat-card:hover,
+.dark .project-card:hover,
+.dark .interview-card:hover {
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.2) !important;
+  transform: translateY(-3px) !important;
 }

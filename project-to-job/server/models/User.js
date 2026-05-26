@@ -63,4 +63,7 @@ userSchema.methods.toPublicProfile = function () {
   return obj;
 };
 
+// Database indexes for fast querying & search ranking
+userSchema.index({ role: 1, trustScore: -1 });
+
 module.exports = mongoose.model("User", userSchema);

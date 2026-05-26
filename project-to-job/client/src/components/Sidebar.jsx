@@ -1,4 +1,4 @@
-import { LayoutDashboard, Folder, MessageSquare, User, LogOut, Star, Search, CalendarDays } from "lucide-react";
+import { LayoutDashboard, Folder, MessageSquare, User, LogOut, Star, Search, CalendarDays, Sparkles, FileText, Map, Calendar } from "lucide-react";
 
 const iconMap = {
   dashboard: <LayoutDashboard size={17} />,
@@ -7,15 +7,19 @@ const iconMap = {
   profile: <User size={17} />,
   shortlists: <Star size={17} />,
   search: <Search size={17} />,
-  calendar: <CalendarDays size={17} />
+  calendar: <CalendarDays size={17} />,
+  copilot: <Sparkles size={17} />,
+  resume: <FileText size={17} />,
+  mock: <Calendar size={17} />,
+  roadmap: <Map size={17} />
 };
 
 export default function Sidebar({ menuItems, active, setActive, onLogout }) {
   return (
     <div className="sidebar">
       <div className="sidebar-top">
-        <div className="sidebar-logo">
-          <img src="/image.png" alt="P2J" />
+        <div className="sidebar-logo flex items-center gap-2">
+          <img src="/p2j_logo.png" alt="P2J Logo" className="w-8 h-8 object-contain rounded-lg shadow-md border border-white/10" />
           <span>Project2Job</span>
         </div>
 

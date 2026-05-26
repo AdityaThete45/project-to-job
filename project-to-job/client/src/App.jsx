@@ -69,7 +69,7 @@ function App() {
         <Route
           path="/company"
           element={token && role === "company"
-            ? <CompanyLayout onLogout={handleLogout} />
+            ? <CompanyLayout userId={userId} onLogout={handleLogout} />
             : <Navigate to="/" />}
         >
           <Route index element={<CompanyDashboard token={token} />} />

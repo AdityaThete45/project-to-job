@@ -1,5 +1,6 @@
 const Interview = require("../models/Interview");
 const mongoose = require("mongoose");
+const { sendNotification } = require("../config/socket");
 
 /* ================================
    COMPANY SENDS INTERVIEW REQUEST
@@ -32,6 +33,28 @@ exports.sendInterviewRequest = async (req, res) => {
       message: message || "We are interested in your project.",
       status: "pending"
     });
+
+    // Notify student of interview request via WebSockets
+    sendNotification(studentId, "INTERVIEW_REQUEST", {
+      companyName: req.user.companyName || req.user.name,
+      projectId
+    });
+
+    // Fetch student & project to send email notification
+    const User = require("../models/User");
+    const Project = require("../models/Project");
+    const { sendInterviewRequestEmail } = require("../services/emailService");
+
+    Promise.all([
+      User.findById(studentId),
+      Project.findById(projectId)
+    ]).then(([student, project]) => {
+      if (student && project) {
+        sendInterviewRequestEmail(student, req.user, project, message).catch(err =>
+          console.error("Error sending interview request email:", err)
+        );
+      }
+    }).catch(err => console.error("Error querying data for interview request email:", err));
 
     res.status(201).json({
       message: "Interview request sent successfully.",
@@ -92,6 +115,24 @@ exports.updateInterviewStatus = async (req, res) => {
 
     await interview.save();
 
+    // Notify company of interview response via WebSockets
+    sendNotification(interview.company.toString(), "INTERVIEW_RESPONSE", {
+      studentName: req.user.name,
+      status
+    });
+
+    // Fetch company recruiter to send email notification
+    const User = require("../models/User");
+    const { sendInterviewResponseEmail } = require("../services/emailService");
+
+    User.findById(interview.company).then(company => {
+      if (company) {
+        sendInterviewResponseEmail(company, req.user, status, studentNotes).catch(err =>
+          console.error("Error sending interview response email:", err)
+        );
+      }
+    }).catch(err => console.error("Error querying data for interview response email:", err));
+
     res.json({ message: `Interview ${status}.`, interview });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -148,6 +189,29 @@ exports.scheduleInterview = async (req, res) => {
     interview.companyNotes = companyNotes || "";
 
     await interview.save();
+
+    // Notify student of interview scheduled via WebSockets
+    sendNotification(interview.student.toString(), "INTERVIEW_SCHEDULED", {
+      companyName: req.user.companyName || req.user.name,
+      scheduledAt: interview.scheduledAt,
+      meetingLink: interview.meetingLink
+    });
+
+    // Fetch student & project details for email notification
+    const User = require("../models/User");
+    const Project = require("../models/Project");
+    const { sendInterviewScheduledEmail } = require("../services/emailService");
+
+    Promise.all([
+      User.findById(interview.student),
+      Project.findById(interview.project)
+    ]).then(([student, project]) => {
+      if (student && project) {
+        sendInterviewScheduledEmail(student, req.user, project, interview.scheduledAt, interview.meetingLink, companyNotes).catch(err =>
+          console.error("Error sending interview scheduled email:", err)
+        );
+      }
+    }).catch(err => console.error("Error querying data for interview scheduled email:", err));
 
     res.json({ message: "Interview scheduled.", interview });
   } catch (error) {

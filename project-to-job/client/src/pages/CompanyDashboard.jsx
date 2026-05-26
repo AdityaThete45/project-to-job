@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { searchProjects, getCompanyStats, addToShortlist, sendInterviewRequest, getTopCandidates } from "../services/api";
 import { getScoreColor, getVideoThumbnail, getTrustRankStyle } from "../hooks/utils";
 import StatCard from "../components/StatCard";
 import ProgressBar from "../components/ProgressBar";
 import { SkeletonCard, SkeletonStat } from "../components/Skeleton";
-import { LayoutDashboard, Star, CalendarDays, Users, TrendingUp, Award } from "lucide-react";
+import { LayoutDashboard, Star, CalendarDays, Users, TrendingUp, Award, Search, Sparkles, Filter } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function CompanyDashboard({ token }) {
   const [projects, setProjects] = useState([]);
@@ -47,7 +48,6 @@ export default function CompanyDashboard({ token }) {
       await addToShortlist({ studentId: project.student._id, projectId: project._id });
       setShortlistedIds(prev => new Set([...prev, project._id]));
     } catch (err) {
-      // already shortlisted or error - silently update state
       setShortlistedIds(prev => new Set([...prev, project._id]));
     } finally {
       setActionLoading(prev => ({ ...prev, [key]: false }));
@@ -72,49 +72,83 @@ export default function CompanyDashboard({ token }) {
     }
   };
 
-  // Top 5 highest proof score projects
   const featuredProjects = projects.slice(0, 6);
 
   return (
-    <>
-      <div className="page-header">
-        <h1 className="page-title">Company Dashboard</h1>
-        <p className="page-subtitle">Discover top talent ranked by project authenticity.</p>
-      </div>
-
-      {/* Stats */}
-      <div className="stats-grid">
+    <div className="space-y-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading ? (
           [1, 2, 3, 4].map(i => <SkeletonStat key={i} />)
         ) : (
           <>
-            <StatCard icon={<LayoutDashboard size={17} />} value={stats?.totalProjects || projects.length} label="Total Projects" color="#6366f1" bg="#eef2ff" />
-            <StatCard icon={<Star size={17} />} value={stats?.shortlistCount || 0} label="Shortlisted" color="#9333ea" bg="#f3e8ff" />
-            <StatCard icon={<CalendarDays size={17} />} value={stats?.interviewCount || 0} label="Interviews Sent" color="#d97706" bg="#fef3c7" />
-            <StatCard icon={<Users size={17} />} value={stats?.acceptedCount || 0} label="Accepted" color="#16a34a" bg="#dcfce7" />
+            <div className="bg-[var(--surface)] border border-[var(--border)] p-5 rounded-2xl flex items-center gap-4 hover:border-indigo-500/20 transition-all duration-350 shadow-md">
+              <div className="p-3 bg-indigo-500/10 rounded-xl text-indigo-400">
+                <LayoutDashboard size={20} />
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Total Projects</div>
+                <div className="text-xl font-bold text-[var(--text-primary)] mt-0.5">{stats?.totalProjects || projects.length}</div>
+              </div>
+            </div>
+            <div className="bg-[var(--surface)] border border-[var(--border)] p-5 rounded-2xl flex items-center gap-4 hover:border-purple-500/20 transition-all duration-350 shadow-md">
+              <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400">
+                <Star size={20} />
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Shortlisted</div>
+                <div className="text-xl font-bold text-[var(--text-primary)] mt-0.5">{stats?.shortlistCount || 0}</div>
+              </div>
+            </div>
+            <div className="bg-[var(--surface)] border border-[var(--border)] p-5 rounded-2xl flex items-center gap-4 hover:border-amber-500/20 transition-all duration-350 shadow-md">
+              <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400">
+                <CalendarDays size={20} />
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Interviews Sent</div>
+                <div className="text-xl font-bold text-[var(--text-primary)] mt-0.5">{stats?.interviewCount || 0}</div>
+              </div>
+            </div>
+            <div className="bg-[var(--surface)] border border-[var(--border)] p-5 rounded-2xl flex items-center gap-4 hover:border-emerald-500/20 transition-all duration-350 shadow-md">
+              <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400">
+                <Users size={20} />
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Accepted Offers</div>
+                <div className="text-xl font-bold text-[var(--text-primary)] mt-0.5">{stats?.acceptedCount || 0}</div>
+              </div>
+            </div>
           </>
         )}
       </div>
 
-      {/* Top Candidates */}
+      {/* Top Candidates Carousel */}
       {!loading && topCandidates.length > 0 && (
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-            <Award size={18} color="#f59e0b" />
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>Top Candidates by Trust Score</h3>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Award className="text-amber-400 animate-bounce" size={20} />
+            <h3 className="text-base font-bold text-[var(--text-primary)] tracking-tight">Trust-Ranked Candidates</h3>
           </div>
-          <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8 }}>
-            {topCandidates.map((c, i) => {
+          <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-thin">
+            {topCandidates.map((c) => {
               const rankStyle = getTrustRankStyle(c.trustRank);
               return (
-                <div key={c._id} className="card" style={{ minWidth: 200, flexShrink: 0, textAlign: "center" }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: "var(--accent-light)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px", fontSize: 18, fontWeight: 700, color: "var(--accent)" }}>
+                <div 
+                  key={c._id} 
+                  onClick={() => navigate(`/company/student/${c._id}`)}
+                  className="bg-[var(--surface)] hover:bg-[var(--border-light)] border border-[var(--border)] hover:border-indigo-500/30 p-5 rounded-2xl text-center min-w-[210px] cursor-pointer transition-all duration-300 shadow-lg flex flex-col items-center shrink-0"
+                >
+                  <div className="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 text-lg font-black mb-3 border border-indigo-500/20">
                     {c.name?.charAt(0).toUpperCase()}
                   </div>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{c.name}</div>
-                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 8 }}>{c.college || "Student"}</div>
-                  <span className="trust-rank-badge" style={{ ...rankStyle, fontSize: 11 }}>{c.trustRank || "Unranked"}</span>
-                  <div style={{ marginTop: 8, fontSize: 12, color: "var(--text-secondary)" }}>{c.totalProjects} projects · {c.verifiedProjects} verified</div>
+                  <h4 className="font-bold text-sm text-[var(--text-primary)] truncate max-w-full">{c.name}</h4>
+                  <p className="text-xs text-[var(--text-secondary)] truncate max-w-full mt-0.5 mb-3">{c.college || "Student"}</p>
+                  <span className="text-[10px] px-2.5 py-1 rounded-full font-bold border" style={{ background: rankStyle.bg, color: rankStyle.color, borderColor: rankStyle.border }}>
+                    {c.trustRank || "Unranked"}
+                  </span>
+                  <div className="mt-4 text-xs text-[var(--text-secondary)] font-medium">
+                    {c.totalProjects} projects · <span className="text-emerald-500">{c.verifiedProjects} verified</span>
+                  </div>
                 </div>
               );
             })}
@@ -122,82 +156,117 @@ export default function CompanyDashboard({ token }) {
         </div>
       )}
 
-      {/* Project Feed */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-        <TrendingUp size={18} color="#6366f1" />
-        <h3 style={{ fontSize: 16, fontWeight: 700 }}>Top Projects by Proof Score</h3>
-      </div>
-
-      {loading ? (
-        <div className="projects-grid">{[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}</div>
-      ) : (
-        <div className="projects-grid">
-          {featuredProjects.map(project => {
-            const thumb = getVideoThumbnail(project.videoLink);
-            const isShortlisted = shortlistedIds.has(project._id);
-            const isRequested = requestedIds.has(project.student?._id);
-
-            return (
-              <div
-                key={project._id}
-                className="project-card"
-                onClick={() => navigate(`/company/project/${project._id}`)}
-                style={{ cursor: "pointer" }}
-              >
-                <div className="project-thumb">
-                  {thumb ? <img src={thumb} alt={project.title} /> : <div className="project-thumb-placeholder">💻</div>}
-                  <div className="project-thumb-overlay" />
-                  {project.isVerified && <div className="verified-badge">✓ Verified</div>}
-                  <div className="thumb-title">{project.title}</div>
-                </div>
-
-                <div className="project-body">
-                  {project.shortlistCount > 0 && (
-                    <div className="interest-badge">
-                      🔥 {project.shortlistCount} {project.shortlistCount === 1 ? "company" : "companies"} interested
-                    </div>
-                  )}
-                  <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
-                    by <strong>{project.student?.name}</strong>
-                    {project.student?.trustRank && project.student.trustRank !== "Unranked" && (
-                      <span style={{ marginLeft: 6, fontSize: 11, color: "var(--accent)", fontWeight: 600 }}>{project.student.trustRank}</span>
-                    )}
-                  </div>
-
-                  <div className="tags">
-                    {project.techStack?.slice(0, 3).map((t, i) => <span key={i} className="tag">{t}</span>)}
-                  </div>
-
-                  <div className="score-row">
-                    <span>Proof Score</span>
-                    <strong style={{ color: getScoreColor(project.proofScore) }}>{project.proofScore}/100</strong>
-                  </div>
-                  <ProgressBar value={project.proofScore} />
-
-                  <div style={{ display: "flex", gap: 8, marginTop: 14 }} onClick={e => e.stopPropagation()}>
-                    <button
-                      className={`btn btn-sm ${isShortlisted ? "btn-secondary" : "btn-secondary"}`}
-                      disabled={isShortlisted || actionLoading[`sl-${project._id}`]}
-                      onClick={e => handleShortlist(e, project)}
-                      style={{ flex: 1 }}
-                    >
-                      {isShortlisted ? "★ Saved" : "☆ Save"}
-                    </button>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      disabled={isRequested || actionLoading[`int-${project._id}`]}
-                      onClick={e => handleInterview(e, project)}
-                      style={{ flex: 1 }}
-                    >
-                      {isRequested ? "Sent ✓" : "Interview"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+      {/* Top Verified Projects Grid */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="text-indigo-400" size={20} />
+            <h3 className="text-base font-bold text-[var(--text-primary)] tracking-tight">Verified Technical Projects</h3>
+          </div>
+          <button 
+            onClick={() => navigate("/company/search")}
+            className="text-xs text-indigo-450 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+          >
+            <Search size={13} /> Browse all
+          </button>
         </div>
-      )}
-    </>
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredProjects.map(project => {
+              const thumb = getVideoThumbnail(project.videoLink);
+              const isShortlisted = shortlistedIds.has(project._id);
+              const isRequested = requestedIds.has(project.student?._id);
+
+              return (
+                <div
+                  key={project._id}
+                  onClick={() => navigate(`/company/project/${project._id}`)}
+                  className="group bg-[var(--surface)] border border-[var(--border)] hover:border-indigo-500/25 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg flex flex-col"
+                >
+                  {/* Thumbnail Overlay */}
+                  <div className="relative aspect-video bg-slate-950 overflow-hidden shrink-0">
+                    {thumb ? (
+                      <img src={thumb} alt={project.title} className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-slate-950 to-slate-900 flex items-center justify-center text-slate-650 text-2xl font-bold">💻</div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90" />
+                    {project.isVerified && (
+                      <span className="absolute top-3.5 right-3.5 text-[9px] font-bold px-2 py-0.5 bg-emerald-500 text-white rounded-md uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                        ✓ Verified
+                      </span>
+                    )}
+                    <h4 className="absolute bottom-3 left-4 right-4 text-sm font-bold text-white line-clamp-1">{project.title}</h4>
+                  </div>
+
+                  {/* Body details */}
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      {project.shortlistCount > 0 && (
+                        <div className="text-[10px] text-amber-500 dark:text-amber-400 font-bold uppercase tracking-wider mb-2">
+                          🔥 {project.shortlistCount} Shortlists
+                        </div>
+                      )}
+                      <p className="text-xs text-[var(--text-secondary)]">
+                        by <strong className="text-[var(--text-primary)]">{project.student?.name}</strong>
+                        {project.student?.trustRank && project.student.trustRank !== "Unranked" && (
+                          <span className="ml-1.5 font-bold text-indigo-500 dark:text-indigo-400">{project.student.trustRank}</span>
+                        )}
+                      </p>
+                      
+                      <div className="flex flex-wrap gap-1 mt-3 mb-4">
+                        {project.techStack?.slice(0, 3).map((t, idx) => (
+                          <span key={idx} className="text-[10px] px-2 py-0.5 bg-[var(--border-light)] border border-[var(--border)] text-[var(--text-secondary)] rounded-md font-medium">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Proof score */}
+                      <div>
+                        <div className="flex justify-between items-center text-xs text-[var(--text-secondary)] font-medium mb-1.5">
+                          <span>Proof Index</span>
+                          <span style={{ color: getScoreColor(project.proofScore) }} className="font-bold">{project.proofScore}/100</span>
+                        </div>
+                        <ProgressBar value={project.proofScore} height={4.5} />
+                      </div>
+
+                      {/* Recruiter quick actions */}
+                      <div className="flex gap-2 pt-1.5" onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={e => handleShortlist(e, project)}
+                          disabled={isShortlisted || actionLoading[`sl-${project._id}`]}
+                          className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                            isShortlisted
+                              ? "bg-[var(--accent-light)] border-[var(--accent)]/20 text-[var(--accent)]"
+                              : "bg-[var(--border-light)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text-secondary)]"
+                          }`}
+                        >
+                          {isShortlisted ? "Saved" : "Save"}
+                        </button>
+                        <button
+                          onClick={e => handleInterview(e, project)}
+                          disabled={isRequested || actionLoading[`int-${project._id}`]}
+                          className="flex-1 py-2 px-3 text-xs font-bold rounded-xl bg-indigo-650 hover:bg-indigo-550 text-white shadow-sm shadow-indigo-600/10 cursor-pointer disabled:opacity-50 disabled:hover:bg-indigo-650 transition-colors"
+                        >
+                          {isRequested ? "Request Sent" : "Request Interview"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

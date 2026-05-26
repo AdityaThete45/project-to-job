@@ -34,8 +34,8 @@ export default function Login({ onLogin }) {
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
-        <div className="auth-logo">
-          <img src="/image.png" alt="P2J" />
+        <div className="auth-logo flex flex-col items-center">
+          <img src="/p2j_logo.png" alt="P2J Logo" className="w-14 h-14 object-contain rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 mb-4" />
           <h2 className="auth-title">Welcome Back</h2>
           <p className="auth-subtitle">Sign in to Project-to-Job</p>
         </div>

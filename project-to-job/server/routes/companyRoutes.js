@@ -7,5 +7,6 @@ router.get("/search", protect, authorize("company"), companyController.searchStu
 router.get("/stats", protect, authorize("company"), companyController.getCompanyStats);
 router.get("/top-candidates", protect, authorize("company"), companyController.getTopCandidates);
 router.get("/student/:id", protect, authorize("company"), companyController.getStudentProfile);
+router.get("/student/:id/ai-summary", protect, authorize("company"), companyController.getStudentAISummary);
 
 module.exports = router;

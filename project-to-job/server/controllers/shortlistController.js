@@ -1,5 +1,6 @@
 const Shortlist = require("../models/Shortlist");
 const mongoose = require("mongoose");
+const { sendNotification } = require("../config/socket");
 
 /* =====================================================
    ADD TO SHORTLIST
@@ -27,6 +28,28 @@ exports.addToShortlist = async (req, res) => {
       project: projectId,
       note: note || ""
     });
+
+    // Notify student of being shortlisted via WebSockets
+    sendNotification(studentId, "SHORTLIST", {
+      companyName: req.user.companyName || req.user.name,
+      projectId
+    });
+
+    // Fetch student & project to send email notification
+    const User = require("../models/User");
+    const Project = require("../models/Project");
+    const { sendShortlistedEmail } = require("../services/emailService");
+
+    Promise.all([
+      User.findById(studentId),
+      Project.findById(projectId)
+    ]).then(([student, project]) => {
+      if (student && project) {
+        sendShortlistedEmail(student, req.user, project).catch(err =>
+          console.error("Error sending shortlisting email:", err)
+        );
+      }
+    }).catch(err => console.error("Error querying data for shortlist email:", err));
 
     res.status(201).json({ message: "Candidate shortlisted successfully.", shortlist });
   } catch (error) {

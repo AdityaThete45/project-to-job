@@ -12,16 +12,27 @@ import ProgressBar from "../components/ProgressBar";
 import {
   Folder, MessageSquare, Star, Award, GitBranch, BarChart2, CheckCircle, Clock, XCircle
 } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
+import AICopilot from "../components/AICopilot";
+import AIResumeAnalyzer from "../components/AIResumeAnalyzer";
+import AIMockInterview from "../components/AIMockInterview";
+import AIRoadmap from "../components/AIRoadmap";
+import { useSocket } from "../hooks/useSocket";
 
 const MENU = [
   { key: "dashboard", label: "Dashboard" },
   { key: "projects", label: "My Projects" },
   { key: "interviews", label: "Interview Requests" },
   { key: "shortlists", label: "Shortlisted By" },
+  { key: "copilot", label: "AI Career Copilot" },
+  { key: "resume", label: "AI Resume Analyzer" },
+  { key: "mock", label: "AI Mock Interview" },
+  { key: "roadmap", label: "AI Learning Roadmap" },
   { key: "profile", label: "My Profile" }
 ];
 
 export default function StudentDashboard({ token, userId: propUserId, onLogout }) {
+  const { theme, toggleTheme } = useTheme();
   const [projects, setProjects] = useState([]);
   const [interviews, setInterviews] = useState([]);
   const [shortlists, setShortlists] = useState([]);
@@ -32,8 +43,25 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
   const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
+  const [toast, setToast] = useState(null);
 
   const userId = propUserId || getUserIdFromToken(token);
+
+  useSocket(userId, (notification) => {
+    let msg = "";
+    if (notification.type === "SHORTLIST") {
+      msg = `⭐ Your project was shortlisted by ${notification.payload.companyName}!`;
+    } else if (notification.type === "INTERVIEW_REQUEST") {
+      msg = `📅 New interview request from ${notification.payload.companyName}!`;
+    } else if (notification.type === "INTERVIEW_SCHEDULED") {
+      msg = `⏰ Interview scheduled by ${notification.payload.companyName} for ${new Date(notification.payload.scheduledAt).toLocaleString()}!`;
+    }
+    if (msg) {
+      setToast(msg);
+      setTimeout(() => setToast(null), 6000);
+      fetchAll(); // Refresh page metrics automatically
+    }
+  });
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -132,18 +160,45 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
   }
 
   return (
-    <div className="dashboard">
+    <div className="dashboard min-h-screen bg-[var(--bg)] text-[var(--text-primary)] transition-colors duration-200 relative">
       <Sidebar menuItems={MENU} active={active} setActive={setActive} onLogout={onLogout} />
 
-      <div className="main">
+      {/* Real-time Toast Notification banner */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 max-w-sm bg-indigo-950/90 border border-indigo-500/30 text-white rounded-2xl p-4 shadow-2xl backdrop-blur-md animate-bounce flex items-center gap-3">
+          <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400">
+            <Sparkles size={16} />
+          </div>
+          <span className="text-xs font-semibold leading-normal">{toast}</span>
+        </div>
+      )}
+
+      <div className="main flex-1 p-6 md:p-10 ml-0 md:ml-[260px] min-h-screen">
+        {/* Top Header Bar with Theme Switcher */}
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8 border-b border-slate-200 dark:border-slate-800/80 pb-6">
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight font-display text-slate-900 dark:text-white">
+              {active === "dashboard" 
+                ? `Welcome back${profile?.name ? `, ${profile.name.split(" ")[0]}` : ""} 👋` 
+                : MENU.find(m => m.key === active)?.label || "Dashboard"}
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              {active === "dashboard" 
+                ? "Here's an overview of your hiring profile & trust stats." 
+                : `Power your career pathway using our intelligent P2J tools.`}
+            </p>
+          </div>
+          <button 
+            onClick={toggleTheme} 
+            className="self-start sm:self-center px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-850/50 text-slate-700 dark:text-slate-300 transition-colors shadow-sm cursor-pointer"
+          >
+            {theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
+          </button>
+        </div>
 
         {/* ===== DASHBOARD ===== */}
         {active === "dashboard" && (
           <>
-            <div className="page-header">
-              <h1 className="page-title">Welcome back{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""} 👋</h1>
-              <p className="page-subtitle">Here's an overview of your hiring profile.</p>
-            </div>
 
             {/* Stats */}
             <div className="stats-grid">
@@ -341,19 +396,16 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
         {/* ===== PROFILE ===== */}
         {active === "profile" && (
           <>
-            <div className="page-header">
-              <h1 className="page-title">My Profile</h1>
-              <p className="page-subtitle">Your public hiring profile.</p>
-            </div>
-
             {profile && (
-              <div className="profile-header">
-                <div className="profile-name">{profile.name}</div>
-                <div className="profile-meta">{profile.email} · {profile.college || "College not set"}</div>
+              <div className="profile-header mb-6 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <div className="text-xl font-bold text-white">{profile.name}</div>
+                  <div className="text-sm text-slate-200 mt-1">{profile.email} · {profile.college || "College not set"}</div>
+                </div>
                 {trust?.trustRank && (() => {
                   const rankStyle = getTrustRankStyle(trust.trustRank);
                   return (
-                    <span className="trust-rank-badge" style={{ background: rankStyle.bg, color: rankStyle.color, border: `1px solid ${rankStyle.border}` }}>
+                    <span className="px-3.5 py-1.5 rounded-full font-bold text-xs shadow-sm uppercase tracking-wider" style={{ background: rankStyle.bg, color: rankStyle.color, border: `1px solid ${rankStyle.border}` }}>
                       🏆 {trust.trustRank}
                     </span>
                   );
@@ -362,7 +414,7 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
             )}
 
             {trust && (
-              <div className="stats-grid" style={{ marginBottom: 24 }}>
+              <div className="stats-grid mb-6">
                 <StatCard icon={<Folder size={17} />} value={trust.totalProjects} label="Projects" color="#6366f1" bg="#eef2ff" />
                 <StatCard icon={<CheckCircle size={17} />} value={trust.verifiedProjects} label="Verified" color="#16a34a" bg="#dcfce7" />
                 <StatCard icon={<Star size={17} />} value={trust.totalShortlists} label="Shortlisted" color="#9333ea" bg="#f3e8ff" />
@@ -371,27 +423,29 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
             )}
 
             {profile && (
-              <div className="card">
-                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Profile Details</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Profile Details</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   {[
-                    { label: "GitHub", value: profile.githubUsername },
-                    { label: "Branch", value: profile.branch },
-                    { label: "CGPA", value: profile.cgpa },
-                    { label: "Graduation", value: profile.graduationYear },
-                    { label: "LinkedIn", value: profile.linkedin }
+                    { label: "GitHub Username", value: profile.githubUsername },
+                    { label: "Branch / Stream", value: profile.branch },
+                    { label: "CGPA Score", value: profile.cgpa },
+                    { label: "Graduation Year", value: profile.graduationYear },
+                    { label: "LinkedIn URL", value: profile.linkedin }
                   ].map(({ label, value }) => value ? (
                     <div key={label}>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>{label}</div>
-                      <div style={{ fontSize: 14, fontWeight: 500 }}>{value}</div>
+                      <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">{label}</div>
+                      <div className="text-sm font-medium text-slate-800 dark:text-slate-200">{value}</div>
                     </div>
                   ) : null)}
                 </div>
                 {profile.skills?.length > 0 && (
-                  <div style={{ marginTop: 16 }}>
-                    <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Skills</div>
-                    <div className="tags">
-                      {profile.skills.map((s, i) => <span key={i} className="tag">{s}</span>)}
+                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3">Skills Inventory</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.skills.map((s, i) => (
+                        <span key={i} className="text-xs px-2.5 py-1 bg-slate-150 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/40 text-slate-750 dark:text-slate-300 rounded-lg font-medium">{s}</span>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -399,6 +453,12 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
             )}
           </>
         )}
+
+        {/* ===== AI PAGES ===== */}
+        {active === "copilot" && <AICopilot />}
+        {active === "resume" && <AIResumeAnalyzer />}
+        {active === "mock" && <AIMockInterview />}
+        {active === "roadmap" && <AIRoadmap />}
 
       </div>
     </div>

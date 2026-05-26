@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Shortlist = require("../models/Shortlist");
 const Interview = require("../models/Interview");
+const aiService = require("../services/aiService");
 
 /* =====================================================
    SEARCH STUDENTS / PROJECTS (with smart ranking)
@@ -122,5 +123,25 @@ exports.getTopCandidates = async (req, res) => {
     res.json(enriched);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+/* =====================================================
+   GET STUDENT AI SUMMARY & PLAGIARISM AUDIT
+   ===================================================== */
+exports.getStudentAISummary = async (req, res) => {
+  try {
+    const student = await User.findById(req.params.id);
+    if (!student || student.role !== "student") {
+      return res.status(404).json({ message: "Student not found." });
+    }
+
+    const projects = await Project.find({ student: student._id });
+    const summary = await aiService.generateCandidateSummary(student, projects);
+
+    res.json(summary);
+  } catch (error) {
+    console.error("AI Candidate Summary Controller Error:", error);
+    res.status(500).json({ message: error.message || "Failed to generate candidate AI summary." });
   }
 };

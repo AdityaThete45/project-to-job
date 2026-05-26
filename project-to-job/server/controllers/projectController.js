@@ -196,8 +196,9 @@ const updateStudentTrustScore = async (studentId) => {
     const projects = await Project.find({ student: studentId });
     if (!projects.length) return;
     const avg = Math.round(projects.reduce((s, p) => s + (p.proofScore || 0), 0) / projects.length);
+    const verifiedCount = projects.filter(p => p.isVerified).length;
     let trustRank = "Unranked";
-    if (avg >= 80) trustRank = "Elite";
+    if (avg >= 80 && verifiedCount >= 2) trustRank = "Elite";
     else if (avg >= 65) trustRank = "Verified";
     else if (avg >= 40) trustRank = "Rising";
     await User.findByIdAndUpdate(studentId, { trustScore: avg, trustRank });
