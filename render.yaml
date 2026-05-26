@@ -33,11 +33,8 @@ services:
       - key: FROM_EMAIL
         sync: false
 
-  # Frontend Static Site
-  - type: web
+  - type: static
     name: p2j-frontend
-    env: static
-    plan: free
     rootDir: project-to-job/client
     buildCommand: npm install && npm run build
     publishDir: dist
