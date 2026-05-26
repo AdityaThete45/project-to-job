@@ -1,16 +1,16 @@
-import axios from "axios";
 import { Star, GraduationCap, Code } from "lucide-react";
+import { addToShortlist } from "../services/api";
 
 export default function StudentCard({ student, token }) {
 
   const shortlist = async () => {
-    await axios.post(
-      "http://localhost:5000/api/shortlist",
-      { studentId: student._id },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    alert("Student shortlisted!");
+    try {
+      await addToShortlist({ studentId: student._id });
+      alert("Student shortlisted!");
+    } catch (err) {
+      console.error("Shortlist error:", err);
+      alert(err.message || "Failed to shortlist student.");
+    }
   };
 
   return (
