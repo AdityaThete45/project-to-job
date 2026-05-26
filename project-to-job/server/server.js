@@ -18,7 +18,17 @@ const app = express();
 
 // ===== Security & Middleware =====
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      origin === "http://localhost:5173" ||
+      origin === process.env.CLIENT_URL ||
+      origin.endsWith(".onrender.com")
+    ) {
+      return callback(null, true);
+    }
+    return callback(new Error("Not allowed by CORS"));
+  },
   credentials: true
 }));
 app.use(express.json({ limit: "10mb" }));
