@@ -1062,7 +1062,7 @@ textarea.form-input {
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .nav-links {
     display: none !important;
   }
