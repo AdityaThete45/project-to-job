@@ -4,7 +4,7 @@ services:
     name: p2j-backend
     env: node
     plan: free
-    rootDir: server
+    rootDir: project-to-job/server
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -38,7 +38,7 @@ services:
     name: p2j-frontend
     env: static
     plan: free
-    rootDir: client
+    rootDir: project-to-job/client
     buildCommand: npm install && npm run build
     publishDir: dist
     routes:
