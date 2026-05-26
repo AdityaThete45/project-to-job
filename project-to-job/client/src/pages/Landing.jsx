@@ -46,7 +46,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed top-24 left-1/2 transform -translate-x-1/2 w-[90%] max-w-lg z-50 rounded-2xl border border-white/5 bg-slate-950/95 backdrop-blur-lg p-6 shadow-2xl flex flex-col gap-4 md:hidden"
+            className="fixed top-24 left-4 right-4 mx-auto max-w-lg z-50 rounded-2xl border border-white/5 bg-slate-950/95 backdrop-blur-lg p-6 shadow-2xl flex flex-col gap-4 md:hidden"
           >
             <a 
               href="#how-it-works" 
