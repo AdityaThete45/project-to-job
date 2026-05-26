@@ -444,3 +444,39 @@ exports.sendInterviewScheduledEmail = async (student, company, project, schedule
     html: getHtmlTemplate(subject, previewText, getBodyHtml(company.name, false))
   });
 };
+
+/**
+ * Send password reset email to user
+ */
+exports.sendPasswordResetEmail = async (user, resetUrl) => {
+  const subject = "🔒 Reset Your Project-to-Job Password";
+  const previewText = "You requested a password reset. Click the button to set a new password.";
+
+  const contentHtml = `
+    <h1>Password Reset Request</h1>
+    <p>Hi ${user.name},</p>
+    <p>You are receiving this email because you (or someone else) requested a password reset for your account on <strong>Project-to-Job</strong>.</p>
+    
+    <p>Please click the button below to reset your password. This link is only valid for <strong>10 minutes</strong>:</p>
+    
+    <div class="button-container">
+      <a href="${resetUrl}" class="btn" style="background-color: #6366f1;">Reset Password</a>
+    </div>
+
+    <div class="quote-box" style="margin-top: 24px; font-size: 13px; color: #475569; background-color: #f8fafc; border-left: 4px solid #94a3b8;">
+      If you did not request this, you can safely ignore this email. Your password will remain unchanged and your account remains secure.
+    </div>
+
+    <p style="font-size: 12px; color: #64748b; margin-top: 20px;">
+      If the button above does not work, copy and paste the following link into your web browser:<br>
+      <a href="${resetUrl}" style="color: #4f46e5; word-break: break-all;">${resetUrl}</a>
+    </p>
+  `;
+
+  await sendMail({
+    to: user.email,
+    subject,
+    text: `Hi ${user.name},\n\nYou requested a password reset. Please copy and paste this link into your browser to reset your password:\n\n${resetUrl}\n\nThis link is only valid for 10 minutes. If you did not request this, please ignore this email.`,
+    html: getHtmlTemplate(subject, previewText, contentHtml)
+  });
+};

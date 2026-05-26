@@ -13,6 +13,8 @@ import CompanyLayout from "./layouts/CompanyLayout";
 import ProjectDetail from "./pages/ProjectDetail";
 import ProjectPreview from "./pages/ProjectPreview";
 import StudentProfile from "./pages/StudentProfile";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -49,6 +51,14 @@ function App() {
         <Route
           path="/signup"
           element={token ? <Navigate to={role === "student" ? "/student" : "/company"} /> : <Signup />}
+        />
+        <Route
+          path="/forgot-password"
+          element={token ? <Navigate to={role === "student" ? "/student" : "/company"} /> : <ForgotPassword />}
+        />
+        <Route
+          path="/reset-password"
+          element={token ? <Navigate to={role === "student" ? "/student" : "/company"} /> : <ResetPassword />}
         />
 
         {/* STUDENT */}

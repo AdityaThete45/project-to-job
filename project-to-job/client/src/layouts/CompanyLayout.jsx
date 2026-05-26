@@ -12,13 +12,14 @@ const COMPANY_MENU = [
 import { useTheme } from "../context/ThemeContext";
 import { useSocket } from "../hooks/useSocket";
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Menu } from "lucide-react";
 
 export default function CompanyLayout({ userId, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const [toast, setToast] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useSocket(userId, (notification) => {
     let msg = "";
@@ -47,6 +48,8 @@ export default function CompanyLayout({ userId, onLogout }) {
         active={active}
         setActive={handleMenuClick}
         onLogout={onLogout}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       {/* Real-time Toast Alerts */}
@@ -60,14 +63,22 @@ export default function CompanyLayout({ userId, onLogout }) {
       )}
 
       <div className="main flex-1 p-6 md:p-10 ml-0 md:ml-[260px] min-h-screen">
-        <div className="flex justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-800/80 pb-6">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight font-display text-slate-900 dark:text-white">
-              Recruiter Analytics
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Find, assess, and filter talent using real project authentication.
-            </p>
+        <div className="flex justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-800/80 pb-6 gap-4">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-850/50 cursor-pointer"
+            >
+              <Menu size={20} />
+            </button>
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-tight font-display text-slate-900 dark:text-white">
+                Recruiter Analytics
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 hidden sm:block">
+                Find, assess, and filter talent using real project authentication.
+              </p>
+            </div>
           </div>
           <button 
             onClick={toggleTheme} 

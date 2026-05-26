@@ -103,3 +103,10 @@ export const gradeInterview = (roleType, topic, answers) =>
 
 export const generateRoadmap = (data) =>
   apiFetch("/ai/roadmap", { method: "POST", body: JSON.stringify(data) });
+
+// ===== PASSWORD RESET =====
+export const requestPasswordReset = (email) =>
+  apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+
+export const resetPassword = (token, password) =>
+  apiFetch("/auth/reset-password", { method: "POST", body: JSON.stringify({ token, password }) });

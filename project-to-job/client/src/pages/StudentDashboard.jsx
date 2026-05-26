@@ -10,7 +10,7 @@ import AddProject from "./AddProject";
 import { SkeletonCard, SkeletonStat } from "../components/Skeleton";
 import ProgressBar from "../components/ProgressBar";
 import {
-  Folder, MessageSquare, Star, Award, GitBranch, BarChart2, CheckCircle, Clock, XCircle
+  Folder, MessageSquare, Star, Award, GitBranch, BarChart2, CheckCircle, Clock, XCircle, Menu
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import AICopilot from "../components/AICopilot";
@@ -39,6 +39,7 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
   const [trust, setTrust] = useState(null);
   const [profile, setProfile] = useState(null);
   const [active, setActive] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -111,9 +112,17 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
   if (selectedProject) {
     return (
       <div className="dashboard">
-        <Sidebar menuItems={MENU} active={active} setActive={(k) => { setActive(k); setSelectedProject(null); }} onLogout={onLogout} />
+        <Sidebar menuItems={MENU} active={active} setActive={(k) => { setActive(k); setSelectedProject(null); }} onLogout={onLogout} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         <div className="main">
-          <button className="btn btn-secondary btn-sm" style={{ marginBottom: 24 }} onClick={() => setSelectedProject(null)}>← Back</button>
+          <div className="flex items-center gap-3 mb-6">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-850/50 cursor-pointer"
+            >
+              <Menu size={20} />
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setSelectedProject(null)}>← Back</button>
+          </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
             <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.4px" }}>{selectedProject.title}</h1>
@@ -161,7 +170,7 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
 
   return (
     <div className="dashboard min-h-screen bg-[var(--bg)] text-[var(--text-primary)] transition-colors duration-200 relative">
-      <Sidebar menuItems={MENU} active={active} setActive={setActive} onLogout={onLogout} />
+      <Sidebar menuItems={MENU} active={active} setActive={setActive} onLogout={onLogout} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Real-time Toast Notification banner */}
       {toast && (
@@ -175,22 +184,30 @@ export default function StudentDashboard({ token, userId: propUserId, onLogout }
 
       <div className="main flex-1 p-6 md:p-10 ml-0 md:ml-[260px] min-h-screen">
         {/* Top Header Bar with Theme Switcher */}
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8 border-b border-slate-200 dark:border-slate-800/80 pb-6">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight font-display text-slate-900 dark:text-white">
-              {active === "dashboard" 
-                ? `Welcome back${profile?.name ? `, ${profile.name.split(" ")[0]}` : ""} 👋` 
-                : MENU.find(m => m.key === active)?.label || "Dashboard"}
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {active === "dashboard" 
-                ? "Here's an overview of your hiring profile & trust stats." 
-                : `Power your career pathway using our intelligent P2J tools.`}
-            </p>
+        <div className="flex flex-row justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-800/80 pb-6 gap-4">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-850/50 cursor-pointer"
+            >
+              <Menu size={20} />
+            </button>
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-tight font-display text-slate-900 dark:text-white">
+                {active === "dashboard" 
+                  ? `Welcome back${profile?.name ? `, ${profile.name.split(" ")[0]}` : ""} 👋` 
+                  : MENU.find(m => m.key === active)?.label || "Dashboard"}
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 hidden sm:block">
+                {active === "dashboard" 
+                  ? "Here's an overview of your hiring profile & trust stats." 
+                  : `Power your career pathway using our intelligent P2J tools.`}
+              </p>
+            </div>
           </div>
           <button 
             onClick={toggleTheme} 
-            className="self-start sm:self-center px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-850/50 text-slate-700 dark:text-slate-300 transition-colors shadow-sm cursor-pointer"
+            className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-850/50 text-slate-700 dark:text-slate-300 transition-colors shadow-sm cursor-pointer"
           >
             {theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
           </button>

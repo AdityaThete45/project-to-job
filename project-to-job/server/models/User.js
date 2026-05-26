@@ -39,7 +39,9 @@ const userSchema = new mongoose.Schema(
     trustScore: { type: Number, default: 0 },
     trustRank: { type: String, default: "Unranked" }, // Unranked / Rising / Verified / Elite
 
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    resetPasswordToken: { type: String, default: null },
+    resetPasswordExpire: { type: Date, default: null }
   },
   { timestamps: true }
 );

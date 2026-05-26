@@ -52,7 +52,10 @@ export default function Login({ onLogin }) {
             <input className="form-input" name="email" type="email" placeholder="you@example.com" onChange={handleChange} required />
           </div>
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="form-label mb-0">Password</label>
+              <Link to="/forgot-password" style={{ fontSize: 13, color: "var(--primary)" }}>Forgot password?</Link>
+            </div>
             <input className="form-input" name="password" type="password" placeholder="••••••••" onChange={handleChange} required />
           </div>
           <button type="submit" className="btn btn-primary btn-full" style={{ marginTop: 4 }} disabled={loading}>
