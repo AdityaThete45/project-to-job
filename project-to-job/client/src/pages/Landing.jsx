@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Sparkles, CheckCircle, GitBranch, ArrowRight, Code, ShieldCheck, Zap, AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, CheckCircle, GitBranch, ArrowRight, Code, ShieldCheck, Zap, AlertCircle, Menu, X } from "lucide-react";
 
 export default function Landing() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="landing bg-[#030712] text-slate-100 min-h-screen relative overflow-x-hidden font-sans">
       {/* Background Glowing Mesh Orbs */}
@@ -16,13 +19,66 @@ export default function Landing() {
           <img src="/p2j_logo.png" alt="P2J Logo" className="w-10 h-10 object-contain rounded-xl shadow-lg border border-white/10" />
           <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">Project2Job</span>
         </div>
-        <div className="nav-links flex items-center gap-6">
+        
+        {/* Desktop Links (Hidden on Mobile) */}
+        <div className="nav-links hidden md:flex items-center gap-6">
           <a href="#how-it-works" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">How It Works</a>
           <a href="#proof-engine" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Proof Engine</a>
           <Link to="/login" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Sign In</Link>
           <Link to="/signup" className="btn btn-primary btn-sm rounded-xl px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-all shadow-md shadow-indigo-600/20 border border-indigo-500/30">Get Started</Link>
         </div>
+
+        {/* Mobile Toggle Button (Visible only on Mobile) */}
+        <button 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden p-1.5 rounded-xl border border-white/10 text-slate-200 hover:bg-white/5 cursor-pointer transition-colors"
+          style={{ background: "none", border: "none" }}
+        >
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </nav>
+
+      {/* Mobile Menu Panel (Slide down using Framer Motion) */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-24 left-1/2 transform -translate-x-1/2 w-[90%] max-w-lg z-50 rounded-2xl border border-white/5 bg-slate-950/95 backdrop-blur-lg p-6 shadow-2xl flex flex-col gap-4 md:hidden"
+          >
+            <a 
+              href="#how-it-works" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm font-semibold text-slate-300 hover:text-white transition-colors py-2 border-b border-white/5"
+            >
+              How It Works
+            </a>
+            <a 
+              href="#proof-engine" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm font-semibold text-slate-300 hover:text-white transition-colors py-2 border-b border-white/5"
+            >
+              Proof Engine
+            </a>
+            <Link 
+              to="/login" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm font-semibold text-slate-300 hover:text-white transition-colors py-2 border-b border-white/5"
+            >
+              Sign In
+            </Link>
+            <Link 
+              to="/signup" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-indigo-600/20 border border-indigo-500/30"
+            >
+              Get Started
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* HERO SECTION */}
       <section className="hero pt-32 pb-20 px-6 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
