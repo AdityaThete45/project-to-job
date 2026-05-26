@@ -1,5 +1,7 @@
 const nodemailer = require("nodemailer");
 
+const CLIENT_URL = process.env.CLIENT_URL || "https://p2j-frontend.onrender.com";
+
 // Check if SMTP is configured
 const isSmtpConfigured =
   process.env.SMTP_HOST &&
@@ -218,7 +220,7 @@ const getHtmlTemplate = (title, previewText, contentHtml) => {
       </div>
       <div class="footer">
         <p style="margin: 0; font-size: 12px; color: #64748b;">
-          This is an automated email from <a href="http://localhost:5173">Project2Job</a>.
+          This is an automated email from <a href="${CLIENT_URL}">Project2Job</a>.
         </p>
         <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">
           &copy; ${new Date().getFullYear()} Project2Job. All rights reserved.
@@ -261,7 +263,7 @@ exports.sendShortlistedEmail = async (student, company, project) => {
     <p>Please keep an eye on your dashboard for upcoming interview requests or direct communications from the hiring team.</p>
 
     <div class="button-container">
-      <a href="http://localhost:5173/student/dashboard" class="btn">View Student Dashboard</a>
+      <a href="${CLIENT_URL}/student/dashboard" class="btn">View Student Dashboard</a>
     </div>
   `;
 
@@ -305,7 +307,7 @@ exports.sendInterviewRequestEmail = async (student, company, project, message) =
     <p>Please log in to your dashboard to accept or decline this interview request.</p>
 
     <div class="button-container">
-      <a href="http://localhost:5173/student/dashboard" class="btn">Respond to Request</a>
+      <a href="${CLIENT_URL}/student/dashboard" class="btn">Respond to Request</a>
     </div>
   `;
 
@@ -353,12 +355,12 @@ exports.sendInterviewResponseEmail = async (company, student, status, studentNot
     ${status === "accepted" ? `
     <p>Since the candidate accepted, you can now schedule the date, time, and set up a meeting link (Google Meet, Zoom, etc.) in your recruiter dashboard.</p>
     <div class="button-container">
-      <a href="http://localhost:5173/company/dashboard" class="btn">Schedule Interview Now</a>
+      <a href="${CLIENT_URL}/company/dashboard" class="btn">Schedule Interview Now</a>
     </div>
     ` : `
     <p>You can browse other high-quality verified candidates on the platform.</p>
     <div class="button-container">
-      <a href="http://localhost:5173/company/dashboard" class="btn">Browse Candidates</a>
+      <a href="${CLIENT_URL}/company/dashboard" class="btn">Browse Candidates</a>
     </div>
     `}
   `;
